@@ -1,0 +1,8 @@
+cmake-build-debug/
+.idea/
+.DS_Store
+a.out
+*.h.gch
+*.out
+ubuntu_setup_env.sh
+
