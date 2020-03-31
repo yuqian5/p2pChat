@@ -18,13 +18,14 @@ GroupChatClient::GroupChatClient(std::string title,
 
     this->identity = std::move(identity);
 
-    //connectToServer();
+    connectToServer();
 
     initWindow();
 
     inputThread = std::thread(&GroupChatClient::inputHandler, this);
     outputThread = std::thread(&GroupChatClient::outputHandler, this);
-    monitorThread = std::thread(&GroupChatClient::monitor, this);
+
+    monitor();
 }
 
 GroupChatClient::~GroupChatClient() = default;
