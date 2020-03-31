@@ -1,8 +1,26 @@
-cmake_minimum_required(VERSION 3.15)
-project(p2pChat)
+CMAKE_MINIMUM_REQUIRED( VERSION 3.15 )
+PROJECT( pchat )
 
-set(CMAKE_CXX_STANDARD 17)
+SET( CMAKE_CXX_STANDARD 17 )
 
-add_executable(p2pChat main.cpp chatRX.cpp chatRX.h chatTX.cpp chatTX.h)
+ADD_EXECUTABLE( pchat main.cpp P2P.cpp P2P.hpp GroupChatClient.cpp GroupChatClient.hpp GroupChatServer.cpp GroupChatServer.hpp ChatInterface.cpp ChatInterface.hpp )
 
-FIND_PACKAGE(curses REQUIRED)
+# link curses
+FIND_PACKAGE( Curses REQUIRED )
+INCLUDE_DIRECTORIES( ${CURSES_INCLUDE_DIR} )
+TARGET_LINK_LIBRARIES( pchat ${CURSES_LIBRARIES} )
+
+# link boost
+FIND_PACKAGE( Boost REQUIRED )
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+TARGET_LINK_LIBRARIES ( pchat LINK_PUBLIC ${Boost_LIBRARIES} )
+
+# link thread
+FIND_PACKAGE( Threads REQUIRED )
+TARGET_LINK_LIBRARIES ( pchat ${CMAKE_THREAD_LIBS_INIT} )
+
+# link rt if on linux
+IF( LINUX AND NOT APPLE )
+    FIND_PACKAGE( RT REQUIRED )
+    TARGET_LINK_LIBRARIES( pchat RT )
+ENDIF( LINUX AND NOT APPLE )
