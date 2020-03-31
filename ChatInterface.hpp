@@ -27,6 +27,8 @@ protected:
 
     std::string title;
 
+    bool exitProgram;
+
 private:
     void clearInputField();
 

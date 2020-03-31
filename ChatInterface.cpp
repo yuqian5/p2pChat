@@ -8,6 +8,7 @@ ChatInterface::ChatInterface(std::string title, int inputBoxSize) {
     this->currentRow = 0;
     this->title = std::move(title);
     this->inputWindowHeight = inputBoxSize;
+    this->exitProgram = false;
 }
 
 ChatInterface::~ChatInterface() {
@@ -71,6 +72,8 @@ std::string ChatInterface::getInput() {
 
                 return std::string(readBuf);
             }
+        }else if(c == 3){
+            exitProgram = true;
         }else{
             waddch(inputWindow, c);
             readBuf[readBufIndex] = c;
