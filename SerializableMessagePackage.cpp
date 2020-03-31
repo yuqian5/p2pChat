@@ -30,14 +30,14 @@ void SerializableMessagePackage::setMessage(const std::string &message) {
 }
 
 std::string SerializableMessagePackage::serialize() {
-    return identity + "\f\a\b\r\f\f" + message;
+    return identity + "\f\f\f\f\f\f" + message;
 }
 
 SerializableMessagePackage SerializableMessagePackage::deserialize(std::string &serialized) {
     SerializableMessagePackage obj;
 
-    std::string identity = serialized.substr(0, serialized.rfind("\f\a\b\r\f\f"));
-    std::string message = serialized.substr(serialized.rfind("\f\a\b\r\f\f")+6, serialized.length()-serialized.rfind("\f\a\b\r\f\f")-6);
+    std::string identity = serialized.substr(0, serialized.rfind("\f\f\f\f\f\f"));
+    std::string message = serialized.substr(serialized.rfind("\f\f\f\f\f\f")+6, serialized.length()-serialized.rfind("\f\f\f\f\f\f")-6);
 
     obj.setIdentity(identity);
     obj.setMessage(message);
