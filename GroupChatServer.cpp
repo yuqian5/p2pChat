@@ -11,13 +11,15 @@ GroupChatServer::GroupChatServer(int port) {
     this->port = port;
 
     // configure socket
-    socketSetup();
+    initializeSocket();
 
-    // start listener
-    listenerThread = std::thread(&GroupChatServer::listener, this);
+    // start newConnectionListener
+    connectionListenerThread = std::thread(&GroupChatServer::newConnectionListener, this);
 
-    // start main
-    main();
+    // start connectionBroadcaster
+    connectionBroadcasterThread = std::thread(&GroupChatServer::connectionBroadcaster, this);
+
+    serverMain();
 }
 
 GroupChatServer::~GroupChatServer() {
@@ -32,7 +34,7 @@ GroupChatServer::~GroupChatServer() {
     }
 }
 
-void GroupChatServer::socketSetup() {
+void GroupChatServer::initializeSocket() {
     // init socket
     listenfd = socket(AF_INET6, SOCK_STREAM, 0);
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -52,7 +54,7 @@ void GroupChatServer::socketSetup() {
     listen(listenfd, BACKLOG);
 }
 
-void GroupChatServer::listener() {
+void GroupChatServer::newConnectionListener() {
     socklen_t addrSize = sizeof dataStorage;
     while(true){
         // accept new connections from
@@ -61,31 +63,80 @@ void GroupChatServer::listener() {
         clientConnections.emplace_back(newConnection);
 
         int c = clientConnections.back();
-        clientHandlerThread.emplace_back(std::thread(clientHandler, std::ref(c), std::ref(messageQueue)));
+        clientHandlers.emplace_back(std::thread(clientConnectionHandler, std::ref(c), std::ref(messageQueue)));
     }
 }
 
-void GroupChatServer::clientHandler(int &connection, TSqueue<std::string> &messageQueue) {
+void GroupChatServer::clientConnectionHandler(int &connection, TSqueue<std::string> &messageQueue) {
     char readBuf[512];
     memset(readBuf, 0, sizeof(readBuf));
 
+    int connectionCopy = connection;
+
     while(true){
-        recv(connection, readBuf, sizeof(readBuf), 0);
+        if(recv(connectionCopy, readBuf, sizeof(readBuf), 0) == 0){
+            break;
+        }
         std::string message = readBuf;
+        memset(readBuf, 0, sizeof(readBuf));
 
         messageQueue.enqueue(message);
     }
 }
 
-void GroupChatServer::main() {
+void GroupChatServer::connectionBroadcaster() {
     while(true){
         // get message
         std::string message = messageQueue.dequeue();
-        std::cout << message << std::endl;
+        chatHistory.emplace_back(message);
+
+        std::string size = std::to_string(message.length());
+        for(int i = size.length() ; i < 5; i++){
+            size.insert(size.begin(), '0');
+        }
 
         // send to all client
         for(auto &connection : clientConnections){
-            send(connection, message.c_str(), message.length(), 0);
+            if(send(connection, size.c_str(), 5, 0) == 0){
+                clientConnections.erase(std::find(clientConnections.begin(), clientConnections.end(), connection));
+            }
+            if(send(connection, message.c_str(), message.length(), 0) == 0){
+                clientConnections.erase(std::find(clientConnections.begin(), clientConnections.end(), connection));
+            }
+        }
+    }
+}
+
+void GroupChatServer::serverMain() {
+    std::cout << "Server Running" << std::endl;
+
+    std::string input;
+    while (true) {
+        std::cout << "Command: ";
+        if (getline(std::cin, input)) {
+            if(input == "exit"){
+                connectionBroadcasterThread.detach();
+                connectionBroadcasterThread.~thread();
+                connectionListenerThread.detach();
+                connectionListenerThread.~thread();
+                for(auto &thread : clientHandlers){
+                    thread.detach();
+                    thread.~thread();
+                }
+                shutdown(listenfd, O_RDWR);
+                close(listenfd);
+                shutdown(connectfd, O_RDWR);
+                close(connectfd);
+                for(auto &fd : clientConnections){
+                    shutdown(fd, O_RDWR);
+                    close(fd);
+                }
+                exit(0);
+            }else if(input == "history"){
+                for(auto &history : chatHistory){
+                    std::cout << history << std::endl;
+                }
+            }
         }
     }
 }

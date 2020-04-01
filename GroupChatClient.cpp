@@ -79,9 +79,13 @@ void GroupChatClient::connectNow(sockaddr_in6 &serverAddr6, int &connectfd) {
 
 void GroupChatClient::inputHandler() {
     while(!exitProgram){
-        SerializableMessagePackage smp = SerializableMessagePackage(identity, getInput());
+        std::string input = getInput();
+        SerializableMessagePackage smp = SerializableMessagePackage(identity, input);
         std::string serializedMessage = smp.serialize();
-        send(connectfd, serializedMessage.c_str(), serializedMessage.length(), 0);
+        if(send(connectfd, serializedMessage.c_str(), serializedMessage.length(), 0)==0){
+            exitProgram = true;
+            continue;
+        }
     }
 }
 
@@ -89,10 +93,20 @@ void GroupChatClient::outputHandler() {
     char readBuf[512];
 
     while(!exitProgram){
-        recv(connectfd, readBuf, sizeof(readBuf), 0);
+        if(recv(connectfd, readBuf, 5, 0)==0){
+            exitProgram = true;
+            continue;
+        }
+        int size = std::stoi(std::string(readBuf), nullptr, 10);
+        memset(readBuf, 0, sizeof(readBuf));
+
+        if(recv(connectfd, readBuf, size, 0)==0){
+            exitProgram = true;
+            continue;
+        }
         std::string serializedMessage = readBuf;
         memset(readBuf, 0, sizeof(readBuf));
-        SerializableMessagePackage smp =  SerializableMessagePackage::deserialize(serializedMessage);
+        SerializableMessagePackage smp =  SerializableMessagePackage::deserialize(std::ref(serializedMessage));
         printMessage(smp.getIdentity(), smp.getMessage());
     }
 }
@@ -103,5 +117,8 @@ void GroupChatClient::monitor() {
     }
     shutdown(connectfd, O_RDWR);
     close(connectfd);
+
+    endwin();
+
     exit(0);
 }

@@ -13,22 +13,25 @@
 #include <fcntl.h>
 #include <thread>
 #include <vector>
+#include <algorithm>
 
 #include "TSQueue.hpp"
 
 #define BACKLOG 20
-#define TIMEOUT 60
 
 class GroupChatServer {
 public:
-    GroupChatServer(int port);
+    explicit GroupChatServer(int port);
     ~GroupChatServer();
 
 private:
-    void main();
-    void socketSetup();
-    void listener();
-    static void clientHandler(int &connection, TSqueue<std::string> &messageQueue);
+    void initializeSocket();
+
+    void connectionBroadcaster();
+    void newConnectionListener();
+    static void clientConnectionHandler(int &connection, TSqueue<std::string> &messageQueue);
+
+    void serverMain();
 
     int listenfd = 0;
     int connectfd = 0;
@@ -37,12 +40,15 @@ private:
 
     int port;
 
-    std::thread listenerThread;
-    std::vector<std::thread> clientHandlerThread;
+    std::thread connectionBroadcasterThread;
+    std::thread connectionListenerThread;
+    std::vector<std::thread> clientHandlers;
 
     std::vector<int> clientConnections;
 
     TSqueue<std::string> messageQueue;
+
+    std::vector<std::string> chatHistory;
 };
 
 
