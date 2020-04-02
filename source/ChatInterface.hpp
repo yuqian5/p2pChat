@@ -12,21 +12,21 @@
 #include <cstring>
 #include <utility>
 
+#define INPUTWINDOWHEIGHT 6
+
 class ChatInterface {
 public:
-    ChatInterface(std::string title, int inputBoxSize);
+    ChatInterface();
     ~ChatInterface();
 
     void initWindow();
+
+    void drawTitle(std::string title);
 
     void printMessage(std::string &senderName, std::string &message);
     std::string getInput();
 
 protected:
-    int inputWindowHeight;
-
-    std::string title;
-
     bool exitProgram;
 
 private:

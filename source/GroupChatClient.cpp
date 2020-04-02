@@ -4,27 +4,30 @@
 
 #include "GroupChatClient.hpp"
 
-GroupChatClient::GroupChatClient(std::string title,
-                                 int inputBoxSize,
-                                 std::string ip,
-                                 std::string protoc,
-                                 std::string identity,
-                                 int port)
-                                 :ChatInterface(std::move(title), inputBoxSize) {
+GroupChatClient::GroupChatClient(std::string ip, std::string protoc, int port) : ChatInterface() {
+    // get username
+    std::cout << "Please enter a username: ";
+    std::getline(std::cin, this->identity);
 
+    // initialize class variable
     this->ip = std::move(ip);
     this->protoc = std::move(protoc);
     this->port = port;
 
-    this->identity = std::move(identity);
-
+    // connect to server
     connectToServer();
 
+    // start chat interface
     initWindow();
 
+    // draw chat title
+    drawTitle(std::string("Connected to server at address" + this->ip));
+
+    // start input thread and output thread
     inputThread = std::thread(&GroupChatClient::inputHandler, this);
     outputThread = std::thread(&GroupChatClient::outputHandler, this);
 
+    // start status monitor
     monitor();
 }
 

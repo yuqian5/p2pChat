@@ -4,10 +4,8 @@
 
 #include "ChatInterface.hpp"
 
-ChatInterface::ChatInterface(std::string title, int inputBoxSize) {
+ChatInterface::ChatInterface() {
     this->currentRow = 0;
-    this->title = std::move(title);
-    this->inputWindowHeight = inputBoxSize;
     this->exitProgram = false;
 }
 
@@ -30,17 +28,17 @@ void ChatInterface::initWindow() {
     drawInterface();
 
     // create display window border
-    WINDOW *temp = newwin(maxRow-1-inputWindowHeight, maxCol-1,1,1); // create
+    WINDOW *temp = newwin(maxRow - 1 - INPUTWINDOWHEIGHT, maxCol - 1, 1, 1); // create
     box(temp, 0 , 0); // draw box
     wrefresh(temp); // refresh
 
     // create display window
-    displayWindow = newwin(maxRow-3-inputWindowHeight, maxCol-3,2,2); // create
+    displayWindow = newwin(maxRow - 3 - INPUTWINDOWHEIGHT, maxCol - 3, 2, 2); // create
     wrefresh(displayWindow); // refresh
     scrollok(displayWindow, TRUE); // allow scroll
 
     // create input window
-    inputWindow = newwin(inputWindowHeight-1, maxCol-1, maxRow-inputWindowHeight+1, 1); // create
+    inputWindow = newwin(INPUTWINDOWHEIGHT - 1, maxCol - 1, maxRow - INPUTWINDOWHEIGHT + 1, 1); // create
     box(inputWindow, 0 , 0); // draw box
     wrefresh(inputWindow); // refresh
 }
@@ -84,7 +82,7 @@ std::string ChatInterface::getInput() {
 }
 
 void ChatInterface::clearInputField() {
-    for(int i = 1; i < inputWindowHeight-2; i++){
+    for(int i = 1; i < INPUTWINDOWHEIGHT - 2; i++){
         wmove(inputWindow, i, 1);
         for(int j  = 1; j < maxCol - 2; j++){
             waddch(inputWindow, 32);
@@ -125,17 +123,13 @@ void ChatInterface::drawInterface() {
 
     // draw text box separator line
     for(int i = 0; i < maxCol; i++){
-        move(maxRow-inputWindowHeight,i);
+        move(maxRow - INPUTWINDOWHEIGHT, i);
         addch('-');
     }
-    mvaddch(maxRow-inputWindowHeight, 0, '+');
-    mvaddch(maxRow-inputWindowHeight, maxCol, '+');
-    move(maxRow-inputWindowHeight,maxCol/2-5);
+    mvaddch(maxRow - INPUTWINDOWHEIGHT, 0, '+');
+    mvaddch(maxRow - INPUTWINDOWHEIGHT, maxCol, '+');
+    move(maxRow - INPUTWINDOWHEIGHT, maxCol / 2 - 5);
     printw("NEW MESSAGE");
-
-    // draw title
-    move(0, maxCol/2-title.length()/2);
-    printw(title.c_str());
 
     // refresh display
     refresh();
@@ -169,4 +163,10 @@ void ChatInterface::printMessage(std::string &senderName, std::string &message) 
     lineUsed += 1;
     currentRow += lineUsed;
     wrefresh(displayWindow);
+}
+
+void ChatInterface::drawTitle(std::string title) {
+// draw title
+    move(0, maxCol/2-title.length()/2);
+    printw(title.c_str());
 }
