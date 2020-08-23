@@ -4,14 +4,14 @@
 
 #include "GroupChatClient.hpp"
 
-GroupChatClient::GroupChatClient(std::string ip, std::string protoc, int port) : ChatInterface() {
+GroupChatClient::GroupChatClient(std::string ip, int protoc, int port) : ChatInterface() {
     // get username
     std::cout << "Please enter a username: ";
     std::getline(std::cin, this->identity);
 
     // initialize class variable
     this->ip = std::move(ip);
-    this->protoc = std::move(protoc);
+    this->protoc = protoc;
     this->port = port;
 
     // connect to server
@@ -21,11 +21,11 @@ GroupChatClient::GroupChatClient(std::string ip, std::string protoc, int port) :
     initWindow();
 
     // draw chat title
-    drawTitle(std::string("Connected to server at address" + this->ip));
+    drawTitle(std::string("Connected to server at address " + this->ip));
 
     // start input thread and output thread
-    inputThread = std::thread(&GroupChatClient::inputHandler, this);
-    outputThread = std::thread(&GroupChatClient::outputHandler, this);
+    this->inputThread = std::thread(&GroupChatClient::inputHandler, this);
+    this->outputThread = std::thread(&GroupChatClient::outputHandler, this);
 
     // start status monitor
     monitor();
@@ -34,7 +34,7 @@ GroupChatClient::GroupChatClient(std::string ip, std::string protoc, int port) :
 GroupChatClient::~GroupChatClient() = default;
 
 void GroupChatClient::connectToServer() {
-    if (protoc == "ipv4") { // ipv4
+    if (protoc == 4) { // ipv4
         // initialize socket
         connectfd = socket(AF_INET, SOCK_STREAM, 0);
         memset(&serverAddr4, 0, sizeof(serverAddr4));
@@ -46,7 +46,7 @@ void GroupChatClient::connectToServer() {
             exit(1);
         }
         connectNow(std::ref(serverAddr4), std::ref(connectfd));
-    } else { // ipv6
+    } else if (protoc == 6) { // ipv6
         // initialize socket
         connectfd = socket(AF_INET6, SOCK_STREAM, 0);
         memset(&serverAddr6, 0, sizeof(serverAddr6));

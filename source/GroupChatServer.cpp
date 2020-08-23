@@ -2,7 +2,6 @@
 // Created by Kerry Cao on 2020-03-29.
 //
 
-#include <cstring>
 #include "GroupChatServer.hpp"
 
 #pragma clang diagnostic push
@@ -13,8 +12,8 @@ GroupChatServer::GroupChatServer(int port) {
     // configure socket
     initializeSocket();
 
-    // start newConnectionListener
-    connectionListenerThread = std::thread(&GroupChatServer::newConnectionListener, this);
+    // start newConnectionDispatcher
+    connectionListenerThread = std::thread(&GroupChatServer::newConnectionDispatcher, this);
 
     // start connectionBroadcaster
     connectionBroadcasterThread = std::thread(&GroupChatServer::connectionBroadcaster, this);
@@ -28,6 +27,7 @@ GroupChatServer::~GroupChatServer() {
     close(listenfd);
     shutdown(connectfd, O_RDWR);
     close(connectfd);
+
     for(auto &fd : clientConnections){
         shutdown(fd, O_RDWR);
         close(fd);
@@ -54,27 +54,39 @@ void GroupChatServer::initializeSocket() {
     listen(listenfd, BACKLOG);
 }
 
-void GroupChatServer::newConnectionListener() {
+[[noreturn]] void GroupChatServer::newConnectionDispatcher() {
     socklen_t addrSize = sizeof dataStorage;
     while(true){
         // accept new connections from
-        int newConnection =  accept(this->listenfd, (struct sockaddr *) &this->dataStorage, &addrSize);
-
+        int newConnection = accept(this->listenfd, (struct sockaddr *) &this->dataStorage, &addrSize);
+        if(newConnection == -1){ // failed to accept, try again
+            continue;
+        }
         clientConnections.emplace_back(newConnection);
 
         int c = clientConnections.back();
-        clientHandlers.emplace_back(std::thread(clientConnectionHandler, std::ref(c), std::ref(messageQueue)));
+        clientHandlers.emplace_back(std::thread(clientConnectionHandler,
+                                                std::ref(c),
+                                                std::ref(messageQueue),
+                                                std::ref(clientConnections)
+                                                ));
     }
 }
 
-void GroupChatServer::clientConnectionHandler(int &connection, TSqueue<std::string> &messageQueue) {
+void GroupChatServer::clientConnectionHandler(int &connection,
+                                              TSqueue<std::string> &messageQueue,
+                                              std::vector<int> &clientConnections) {
     char readBuf[512];
     memset(readBuf, 0, sizeof(readBuf));
 
     int connectionCopy = connection;
 
     while(true){
-        if(recv(connectionCopy, readBuf, sizeof(readBuf), 0) == 0){
+        if(recv(connectionCopy, readBuf, sizeof(readBuf), 0) == 0){ // connection terminated
+            clientConnections.erase(std::remove(clientConnections.begin(),
+                                                clientConnections.end(), connectionCopy), clientConnections.end()); // remove connection from broadcast list
+            shutdown(connectionCopy, O_RDWR);
+            close(connectionCopy);
             break;
         }
         std::string message = readBuf;
@@ -84,7 +96,7 @@ void GroupChatServer::clientConnectionHandler(int &connection, TSqueue<std::stri
     }
 }
 
-void GroupChatServer::connectionBroadcaster() {
+[[noreturn]] void GroupChatServer::connectionBroadcaster() {
     while(true){
         // get message
         std::string message = messageQueue.dequeue();
