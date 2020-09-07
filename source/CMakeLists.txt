@@ -3,7 +3,7 @@ PROJECT( pchat )
 
 SET( CMAKE_CXX_STANDARD 17 )
 
-ADD_EXECUTABLE( pchat main.cpp GroupChatClient.cpp GroupChatClient.hpp GroupChatServer.cpp GroupChatServer.hpp ChatInterface.cpp ChatInterface.hpp SerializableMessagePackage.cpp SerializableMessagePackage.hpp TSQueue.hpp)
+ADD_EXECUTABLE( pchat src/main.cpp src/GroupChatClient.cpp include/GroupChatClient.hpp src/GroupChatServer.cpp include/GroupChatServer.hpp src/ChatInterface.cpp include/ChatInterface.hpp src/SerializableMessagePackage.cpp include/SerializableMessagePackage.hpp include/TSQueue.hpp)
 
 # link curses
 FIND_PACKAGE( Curses REQUIRED )

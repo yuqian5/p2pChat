@@ -2,7 +2,7 @@
 // Created by Kerry Cao on 2020-03-29.
 //
 
-#include "GroupChatServer.hpp"
+#include "../include/GroupChatServer.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"

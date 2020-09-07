@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "GroupChatClient.hpp"
-#include "GroupChatServer.hpp"
+#include "../include/GroupChatClient.hpp"
+#include "../include/GroupChatServer.hpp"
 
 /*
  * option

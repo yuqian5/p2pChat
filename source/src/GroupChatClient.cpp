@@ -2,7 +2,7 @@
 // Created by Kerry Cao on 2020-03-29.
 //
 
-#include "GroupChatClient.hpp"
+#include "../include/GroupChatClient.hpp"
 
 GroupChatClient::GroupChatClient(std::string ip, int protoc, int port) : ChatInterface() {
     // get username

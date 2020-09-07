@@ -2,7 +2,7 @@
 // Created by Kerry Cao on 2020-03-29.
 //
 
-#include "ChatInterface.hpp"
+#include "../include/ChatInterface.hpp"
 
 ChatInterface::ChatInterface() {
     this->currentRow = 0;

@@ -2,7 +2,7 @@
 // Created by Kerry Cao on 2020-03-30.
 //
 
-#include "SerializableMessagePackage.hpp"
+#include "../include/SerializableMessagePackage.hpp"
 
 SerializableMessagePackage::SerializableMessagePackage(std::string identity, std::string message) {
     this->identity = std::move(identity);
