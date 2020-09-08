@@ -3,17 +3,12 @@ PROJECT( pchat )
 
 SET( CMAKE_CXX_STANDARD 17 )
 
-ADD_EXECUTABLE( pchat main.cpp P2P.cpp P2P.hpp GroupChatClient.cpp GroupChatClient.hpp GroupChatServer.cpp GroupChatServer.hpp ChatInterface.cpp ChatInterface.hpp SerializableMessagePackage.cpp SerializableMessagePackage.hpp TSQueue.hpp)
+ADD_EXECUTABLE( pchat src/main.cpp src/GroupChatClient.cpp include/GroupChatClient.hpp src/GroupChatServer.cpp include/GroupChatServer.hpp src/ChatInterface.cpp include/ChatInterface.hpp src/SerializableMessagePackage.cpp include/SerializableMessagePackage.hpp include/TSQueue.hpp)
 
 # link curses
 FIND_PACKAGE( Curses REQUIRED )
 INCLUDE_DIRECTORIES( ${CURSES_INCLUDE_DIR} )
 TARGET_LINK_LIBRARIES( pchat ${CURSES_LIBRARIES} )
-
-# link boost
-FIND_PACKAGE( Boost REQUIRED )
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
-TARGET_LINK_LIBRARIES ( pchat LINK_PUBLIC ${Boost_LIBRARIES} )
 
 # link thread
 FIND_PACKAGE( Threads REQUIRED )

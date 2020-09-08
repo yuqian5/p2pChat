@@ -19,7 +19,7 @@
 
 class GroupChatClient : private ChatInterface{
 public:
-    GroupChatClient(std::string title, int inputBoxSize, std::string ip, std::string protoc, std::string identity, int port);
+    GroupChatClient(std::string ip, int protoc, int port);
     ~GroupChatClient();
 
 private:
@@ -40,7 +40,7 @@ private:
     std::thread monitorThread;
 
     std::string ip;
-    std::string protoc;
+    int protoc;
     int port;
     std::string identity;
 };

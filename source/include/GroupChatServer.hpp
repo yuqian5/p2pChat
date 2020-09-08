@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <thread>
+#include <cstring>
 #include <vector>
 #include <algorithm>
 
@@ -27,9 +28,12 @@ public:
 private:
     void initializeSocket();
 
-    void connectionBroadcaster();
-    void newConnectionListener();
-    static void clientConnectionHandler(int &connection, TSqueue<std::string> &messageQueue);
+    [[noreturn]] void connectionBroadcaster();
+
+    [[noreturn]] void newConnectionDispatcher();
+    static void clientConnectionHandler(int &connection,
+                                        TSqueue<std::string> &messageQueue,
+                                        std::vector<int> &clientConnections);
 
     void serverMain();
 

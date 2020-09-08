@@ -2,36 +2,39 @@
 // Created by Kerry Cao on 2020-03-29.
 //
 
-#include "GroupChatClient.hpp"
+#include "../include/GroupChatClient.hpp"
 
-GroupChatClient::GroupChatClient(std::string title,
-                                 int inputBoxSize,
-                                 std::string ip,
-                                 std::string protoc,
-                                 std::string identity,
-                                 int port)
-                                 :ChatInterface(std::move(title), inputBoxSize) {
+GroupChatClient::GroupChatClient(std::string ip, int protoc, int port) : ChatInterface() {
+    // get username
+    std::cout << "Please enter a username: ";
+    std::getline(std::cin, this->identity);
 
+    // initialize class variable
     this->ip = std::move(ip);
-    this->protoc = std::move(protoc);
+    this->protoc = protoc;
     this->port = port;
 
-    this->identity = std::move(identity);
-
+    // connect to server
     connectToServer();
 
+    // start chat interface
     initWindow();
 
-    inputThread = std::thread(&GroupChatClient::inputHandler, this);
-    outputThread = std::thread(&GroupChatClient::outputHandler, this);
+    // draw chat title
+    drawTitle(std::string("Connected to server at address " + this->ip));
 
+    // start input thread and output thread
+    this->inputThread = std::thread(&GroupChatClient::inputHandler, this);
+    this->outputThread = std::thread(&GroupChatClient::outputHandler, this);
+
+    // start status monitor
     monitor();
 }
 
 GroupChatClient::~GroupChatClient() = default;
 
 void GroupChatClient::connectToServer() {
-    if (protoc == "ipv4") { // ipv4
+    if (protoc == 4) { // ipv4
         // initialize socket
         connectfd = socket(AF_INET, SOCK_STREAM, 0);
         memset(&serverAddr4, 0, sizeof(serverAddr4));
@@ -43,7 +46,7 @@ void GroupChatClient::connectToServer() {
             exit(1);
         }
         connectNow(std::ref(serverAddr4), std::ref(connectfd));
-    } else { // ipv6
+    } else if (protoc == 6) { // ipv6
         // initialize socket
         connectfd = socket(AF_INET6, SOCK_STREAM, 0);
         memset(&serverAddr6, 0, sizeof(serverAddr6));
